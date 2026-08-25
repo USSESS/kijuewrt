@@ -16,6 +16,10 @@ sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 # 修改主机名为 KiJueWrt
 sed -i "s/set system.@system\[-1\].hostname=.*/set system.@system[-1].hostname='KiJueWrt'/g" package/base-files/files/bin/config_generate
 
+# 设置GRUB开机背景图
+sed -i '/set root/a set background_image=/boot/grub/background.png' target/linux/x86/image/grub.cfg
+sed -i '/set root/a set gfxmode=1024x768' target/linux/x86/image/grub.cfg
+
 # 设置SSH登录banner KiJueWrt
 cat > package/base-files/files/etc/banner <<'EOF'
 
