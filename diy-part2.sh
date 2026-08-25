@@ -1,20 +1,16 @@
 #!/bin/bash
-#
-# https://github.com/P3TERX/Actions-OpenWrt
-# File name: diy-part2.sh
-# Description: OpenWrt DIY script part 2 (After Update feeds)
-#
-# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
+cd openwrt
 
-# Modify default IP
-sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
+# 修改固件版本信息
+sed -i 's/DISTRIB_ID.*/DISTRIB_ID="My2203"/' package/base-files/files/etc/openwrt_release
+sed -i 's/DISTRIB_RELEASE.*/DISTRIB_RELEASE="22.03定制版"/' package/base-files/files/etc/openwrt_release
+sed -i 's/DISTRIB_DESCRIPTION.*/DISTRIB_DESCRIPTION="GitHub Actions编译官方22.03"/' package/base-files/files/etc/openwrt_release
 
-# Modify default theme
-#sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
+# 修改路由器主机名
+sed -i "s/uci set system.@system\[0\].hostname='OpenWrt'/uci set system.@system[0].hostname='MyRouter'/" package/base-files/files/bin/config_generate
 
-# Modify hostname
-#sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
+# 修改LAN网关IP为10.10.10.1
+sed -i 's/uci set network.lan.ipaddr=.*/uci set network.lan.ipaddr='"'"'10.10.10.1'"'"'/' package/base-files/files/bin/config_generate
+
+# Argon登录页壁纸（网络图片，不用上传图片）
+wget -O package/luci-theme-argon/htdocs/argon/img/bg1.jpg https://p3terx.com/images/avatar.jpg
