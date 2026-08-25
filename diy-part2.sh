@@ -10,9 +10,6 @@
 # See /LICENSE for more information.
 #
 
-# Modify default IP
-sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
-
 # 修改默认IP为10.10.10.1
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 
