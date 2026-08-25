@@ -16,3 +16,7 @@
 # Add a feed source
 echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
 #echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
+# Argon主题源
+echo 'src-git argon https://github.com/jerrykuku/luci-theme-argon.git' >> feeds.conf.default
+# fanchmwrt插件包源
+echo 'src-git fanchmwrt https://github.com/fanchmwrt/fanchmwrt-packages.git' >> feeds.conf.default
