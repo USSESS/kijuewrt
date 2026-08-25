@@ -24,4 +24,18 @@ cp -r feeds/istore/luci-app-store package/
 
 # 注释第三方源，防止后续更新改动
 sed -i '/argon\|istore\|passwall\|passwall_packages\|kenzo\|small/s/^/#/' feeds.conf.default
-#echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
+
+# ======================全部自定义配置挪到这里！======================
+# 自定义固件信息 KiJueWrt
+sed -i 's/DISTRIB_ID.*/DISTRIB_ID="KiJueWrt"/' package/base-files/files/etc/openwrt_release
+sed -i 's/DISTRIB_RELEASE.*/DISTRIB_RELEASE="1.0.0.1"/' package/base-files/files/etc/openwrt_release
+sed -i 's/DISTRIB_DESCRIPTION.*/DISTRIB_DESCRIPTION="KiJueWrt    1.0.0.1"/' package/base-files/files/etc/openwrt_release
+
+# 路由器主机名（仅英文）
+sed -i "s/uci set system.@system\[0\].hostname='OpenWrt'/uci set system.@system[0].hostname='KiJueWrt'/" package/base-files/files/bin/config_generate
+
+# LAN后台IP 10.10.10.1
+sed -i 's/uci set network.lan.ipaddr=.*/uci set network.lan.ipaddr='"'"'10.10.10.1'"'"'/' package/base-files/files/bin/config_generate
+
+# 壁纸不编译内置，注释掉，刷完后台上传
+# wget -O package/luci-theme-argon/htdocs/argon/img/bg1.jpg "图片直链"
