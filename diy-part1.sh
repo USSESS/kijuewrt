@@ -20,3 +20,5 @@ echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.defau
 echo 'src-git argon https://github.com/jerrykuku/luci-theme-argon.git' >> feeds.conf.default
 # fanchmwrt插件包源
 echo 'src-git fanchmwrt https://github.com/fanchmwrt/fanchmwrt-packages.git' >> feeds.conf.default
+# 商店
+echo 'src-git istore https://github.com/linkease/istore.git' >> feeds.conf.default
