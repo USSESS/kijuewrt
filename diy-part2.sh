@@ -29,3 +29,6 @@ cat > package/base-files/files/etc/banner <<'EOF'
               KiJueWrt  25.05.1  
 
 EOF
+
+#复制正常banner到救援模式banner
+cp package/base-files/files/etc/banner package/base-files/files/etc/banner.failsafe
