@@ -1,16 +1,26 @@
 #!/bin/bash
-cd openwrt
+# https://github.com/P3TERX/Actions-OpenWrt
+# File name: diy-part2.sh
+# Description: OpenWrt DIY script part 2 (After Update feeds)
+# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
+# This is free software, licensed under the MIT License.
 
-# ==========自定义固件信息==========
-sed -i 's/DISTRIB_ID.*/DISTRIB_ID="KiJueWrt"/' package/base-files/files/etc/openwrt_release
-sed -i 's/DISTRIB_RELEASE.*/DISTRIB_RELEASE="1.0.0.1"/' package/base-files/files/etc/openwrt_release
-sed -i 's/DISTRIB_DESCRIPTION.*/DISTRIB_DESCRIPTION="KiJueWrt    1.0.0.1"/' package/base-files/files/etc/openwrt_release
+# ==========自定义固件信息 KiJueWrt ==========
+cat > package/base-files/files/etc/openwrt_release <<EOF
+DISTRIB_ID="KiJueWrt"
+DISTRIB_RELEASE="1.0.0.1"
+DISTRIB_DESCRIPTION="KiJueWrt    1.0.0.1"
+DISTRIB_TARGET="x86/64"
+DISTRIB_ARCH="x86_64"
+EOF
 
-# 路由器主机名（仅英文）
-sed -i "s/uci set system.@system\[0\].hostname='OpenWrt'/uci set system.@system[0].hostname='KiJueWrt'/" package/base-files/files/bin/config_generate
+# 修改主机名
+sed -i 's/OpenWrt/KiJueWrt/g' package/base-files/files/bin/config_generate
 
-# LAN后台IP 10.10.10.1
-sed -i 's/uci set network.lan.ipaddr=.*/uci set network.lan.ipaddr='"'"'10.10.10.1'"'"'/' package/base-files/files/bin/config_generate
+# 修改默认后台IP为10.10.10.1
+sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 
-# 编译内置背景壁纸，不需要就删除本行
-wget -O package/luci-theme-argon/htdocs/argon/img/bg1.jpg https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEZyo5qjPTUxnbyC7LbF5vmSOF9u3eSOAACFSgAAg-uaVRlN0GOJvxdPT0E.jpg
+# 设置开机默认argon主题（22.03有效）
+sed -i '/uci set luci.main.mediaurlbase/a\uci set luci.main.theme=luci-theme-argon' package/base-files/files/bin/config_generate
+
+# 壁纸：刷完固件网页后台上传JPG，不要脚本下载
