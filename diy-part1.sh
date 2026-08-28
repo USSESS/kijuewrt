@@ -1,67 +1,48 @@
-CONFIG_TARGET_x86=y
-CONFIG_TARGET_x86_64=y
-CONFIG_TARGET_x86_64_GENERIC=y
-CONFIG_TARGET_ROOTFS_EXT4FS=y
-CONFIG_TARGET_ROOTFS_SQUASHFS=y
-CONFIG_TARGET_IMAGES_GZIP=y
-CONFIG_GRUB_IMAGES=y
-CONFIG_GRUB_EFI_IMAGES=y
-CONFIG_TARGET_ROOTFS_PARTSIZE=2048
+#!/bin/bash
+set -e
 
-CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_luci-base=y
-CONFIG_PACKAGE_luci-mod-admin-full=y
-CONFIG_PACKAGE_luci-proto-ppp=y
+# iStore软件中心源 linkease官方 main分支
+echo "src-git istore https://github.com/linkease/istore.git;main" >> feeds.conf.default
+# 一键上网设置向导 netwizard 源（sirpdboy 官方适配 24.10/25.12）
+echo "src-git netwizard https://github.com/sirpdboy/luci-app-netwizard.git;main" >> feeds.conf.default
 
-# ====== 中文包（两个必须都有，缺一个页面就半英文） ======
-CONFIG_PACKAGE_luci-i18n-zh-cn=y
-CONFIG_PACKAGE_luci-i18n-base-zh-cn=y
+# 本地导入仓库内定制Edge主题
+if [ -d "$GITHUB_WORKSPACE/package/luci-theme-edge-master" ];then
+    cp -r "$GITHUB_WORKSPACE/package/luci-theme-edge-master" package/luci-theme-edge
+    echo "本地Edge主题已导入"
+else
+    echo "警告：本地Edge主题文件夹缺失，跳过复制"
+fi
 
-#主题
-CONFIG_PACKAGE_luci-theme-bootstrap=y
-CONFIG_PACKAGE_luci-theme-edge=y
+# 更新全部feeds
+./scripts/feeds update -a
+./scripts/feeds install -a
 
-#多WAN负载均衡 mwan3
-CONFIG_PACKAGE_mwan3=y
-CONFIG_PACKAGE_luci-app-mwan3=y
-CONFIG_PACKAGE_luci-i18n-mwan3-zh-cn=y
+# ========== 【关键】验证istore源是否真的拉取成功 ==========
+echo "====== 检查istore源拉取结果 ======"
+ls -la feeds/istore/ 2>/dev/null || echo "❌ feeds/istore/ 目录不存在，源拉取失败！"
+ls -la package/feeds/istore/ 2>/dev/null || echo "❌ package/feeds/istore/ 目录不存在，install失败！"
 
-#拨号组件
-CONFIG_PACKAGE_ppp=y
-CONFIG_PACKAGE_pppoe-discovery=y
+# ========== 【补全】强制安装所有关键包，防止漏打包 ==========
+# 说明：set -e 下若某个包在 feeds 中不存在，install 返回非0会直接中断脚本，
+# 所以这里全部加 || true 兜底；真正决定"是否编进固件"的是 .config 里的 =y 选项。
+# iStore商店 + 强制依赖
+./scripts/feeds install luci-app-store || true
+./scripts/feeds install luci-compat || true
 
-#iStore商店
-CONFIG_PACKAGE_luci-app-store=y
-CONFIG_PACKAGE_luci-compat=y
+# 上网向导（js版自带中文，i18n 包若不存在不影响主功能）
+./scripts/feeds install luci-app-netwizard || true
+./scripts/feeds install luci-i18n-netwizard-zh-cn || true
 
-#一键上网向导 netwizard
-CONFIG_PACKAGE_luci-app-netwizard=y
-CONFIG_PACKAGE_luci-i18n-netwizard-zh-cn=y
+# 中文语言包（让 LuCI 变中文的核心是 base-zh-cn，必装）
+./scripts/feeds install luci-i18n-zh-cn || true
+./scripts/feeds install luci-i18n-base-zh-cn || true
 
-#网页终端
-CONFIG_PACKAGE_ttyd=y
-CONFIG_PACKAGE_kmod-macvlan=y
+# 网络下载工具 + HTTPS证书
+./scripts/feeds install curl wget ca-certificates unzip tar || true
 
-#包管理器全套（后期装软件核心）
-CONFIG_PACKAGE_opkg=y
-CONFIG_PACKAGE_opkg-update=y
-CONFIG_PACKAGE_opkg-conf=y
-
-#网络下载工具 https依赖
-CONFIG_PACKAGE_curl=y
-CONFIG_PACKAGE_wget=y
-CONFIG_PACKAGE_wget-ssl=y
-CONFIG_PACKAGE_ca-certificates=y
-
-#python依赖，很多插件需要
-CONFIG_PACKAGE_python3=y
-CONFIG_PACKAGE_python3-base=y
-
-#压缩解压工具，离线ipk安装必备
-CONFIG_PACKAGE_unzip=y
-CONFIG_PACKAGE_gzip=y
-CONFIG_PACKAGE_tar=y
-
-#磁盘工具，挂载硬盘、分区维护
-CONFIG_PACKAGE_fdisk=y
-CONFIG_PACKAGE_e2fsprogs=y
+# ========== 【最终验证】列出所有已安装的关键包 ==========
+echo "====== 关键包安装验证 ======"
+ls package/feeds/istore/ 2>/dev/null | grep -E "store|compat" || echo "❌ iStore相关包缺失"
+ls package/feeds/luci/ 2>/dev/null | grep -E "i18n-zh-cn|i18n-base-zh-cn" || echo "❌ 中文包缺失"
+echo "====== diy-part1.sh 执行完毕 ======"
