@@ -24,9 +24,13 @@ config main
 	option lang 'zh_cn'
 LUCIEOF
 
-# ========== uci-defaults 开机脚本：默认中文+时区 ==========
+# ========== uci-defaults 开机脚本：默认中文+时区+主题保底 ==========
+# 注意：edge主题的 30_luci-theme-edge 会在本脚本之前执行，把 mediaurlbase 设成 edge。
+# 本脚本(99_*)在后面执行，强制设回 bootstrap 保底，防止edge主题不兼容导致白屏。
+# 想要edge主题的话，刷好后在 系统→语言和界面 里手动切换即可。
 cat > package/base-files/files/etc/uci-defaults/99-kijuewrt <<"UCIEOF"
 uci set luci.main.lang='zh_cn'
+uci set luci.main.mediaurlbase='/luci-static/bootstrap'
 uci set system.@system[0].timezone='CST-8'
 uci set system.@system[0].zonename='Asia/Shanghai'
 uci commit luci
