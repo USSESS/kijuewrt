@@ -13,24 +13,23 @@ sed -i 's/set system.@system\[-1\].hostname=.*/set system.@system[0].hostname='\
 
 # ========== 【修复】files目录预写LuCI配置，固化默认中文 ==========
 # 关键：新版LuCI语言设置走 luci.main.lang（config main 块），必须同时写 core 和 main。
-# mediaurlbase 用 bootstrap 保底，主题异常时界面也不会白屏；edge主题已编进固件，可在界面里手动切换。
+# 默认主题用 edge（你仓库里的定制主题），和edge主题自带的30脚本保持一致。
 mkdir -p files/etc/config
 cat > files/etc/config/luci <<'LUCIEOF'
 config core
 	option lang 'auto'
-	option mediaurlbase '/luci-static/bootstrap'
+	option mediaurlbase '/luci-static/edge'
 
 config main
 	option lang 'zh_cn'
 LUCIEOF
 
-# ========== uci-defaults 开机脚本：默认中文+时区+主题保底 ==========
-# 注意：edge主题的 30_luci-theme-edge 会在本脚本之前执行，把 mediaurlbase 设成 edge。
-# 本脚本(99_*)在后面执行，强制设回 bootstrap 保底，防止edge主题不兼容导致白屏。
-# 想要edge主题的话，刷好后在 系统→语言和界面 里手动切换即可。
+# ========== uci-defaults 开机脚本：默认中文+时区+edge主题 ==========
+# edge主题的 30_luci-theme-edge 会在本脚本之前执行，把 mediaurlbase 设成 edge。
+# 本脚本(99_*)在后面执行，同样设成 edge，保持一致，不会被覆盖。
 cat > package/base-files/files/etc/uci-defaults/99-kijuewrt <<"UCIEOF"
 uci set luci.main.lang='zh_cn'
-uci set luci.main.mediaurlbase='/luci-static/bootstrap'
+uci set luci.main.mediaurlbase='/luci-static/edge'
 uci set system.@system[0].timezone='CST-8'
 uci set system.@system[0].zonename='Asia/Shanghai'
 uci commit luci
