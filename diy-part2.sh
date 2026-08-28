@@ -1,38 +1,50 @@
 #!/bin/bash
-#
-# https://github.com/P3TERX/Actions-OpenWrt
-# File name: diy-part2.sh
-# Description: OpenWrt DIY script part 2 (After Update feeds)
-#
-# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
-
-# 修改默认IP为10.10.10.1
+set -e
+# ==========系统全局名称 KiJueWrt ==========
+sed -i 's|ImmortalWrt|KiJueWrt|g' package/base-files/files/etc/openwrt_release
+sed -i 's|OpenWrt|KiJueWrt|g' package/base-files/files/etc/openwrt_release
+sed -i 's|DISTRIB_RELEASE=.*|DISTRIB_RELEASE='"'"'25.0.0.1'"'"'|g' package/base-files/files/etc/openwrt_release
+sed -i 's|DISTRIB_CODENAME=.*|DISTRIB_CODENAME='"'"'KiJue'"'"'|g' package/base-files/files/etc/openwrt_release
+sed -i 's|DISTRIB_DESCRIPTION=.*|DISTRIB_DESCRIPTION='"'"'KiJueWrt Built by GitHub Actions'"'"'|g' package/base-files/files/etc/openwrt_release
+# 修改默认LAN IP为10.10.10.1
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
+# 设置默认主机名 KiJueWrt
+sed -i 's/set system.@system\[-1\].hostname=.*/set system.@system[0].hostname='\''KiJueWrt'\''/g' package/base-files/files/bin/config_generate
 
-# 修改主机名为 KiJueWrt
-sed -i "s/set system.@system\[-1\].hostname=.*/set system.@system[-1].hostname='KiJueWrt'/g" package/base-files/files/bin/config_generate
+# ========== 【修复】files目录预写LuCI配置，固化默认中文 ==========
+# 关键：新版LuCI语言设置走 luci.main.lang（config main 块），必须同时写 core 和 main。
+# mediaurlbase 用 bootstrap 保底，主题异常时界面也不会白屏；edge主题已编进固件，可在界面里手动切换。
+mkdir -p files/etc/config
+cat > files/etc/config/luci <<'LUCIEOF'
+config core
+	option lang 'auto'
+	option mediaurlbase '/luci-static/bootstrap'
 
-# 设置GRUB开机背景图
-sed -i '/set root/a set background_image=/boot/grub/background.png' target/linux/x86/image/grub.cfg
-sed -i '/set root/a set gfxmode=1024x768' target/linux/x86/image/grub.cfg
+config main
+	option lang 'zh_cn'
+LUCIEOF
 
-# 设置SSH登录banner KiJueWrt
-cat > package/base-files/files/etc/banner <<'EOF'
+# ========== uci-defaults 开机脚本：默认中文+时区 ==========
+cat > package/base-files/files/etc/uci-defaults/99-kijuewrt <<"UCIEOF"
+uci set luci.main.lang='zh_cn'
+uci set system.@system[0].timezone='CST-8'
+uci set system.@system[0].zonename='Asia/Shanghai'
+uci commit luci
+uci commit system
+exit 0
+UCIEOF
 
- K   K  iii  JJJJJJ   u   u  EEEEE  W   W  RRRR   TTTTT
- K  K    i      J     u   u  E      W   W  R   R    T
- KKK     i      J     u   u  EEEE   W W W  RRRR     T
- K  K    i      J     u   u  E      W W W  R  R     T
- K   K  iii   JJJJ    uuuuu  EEEEE   W W   R   R    T
-
-
-              KiJueWrt  25.05.1  
-
-EOF
-
-#复制正常banner到救援模式banner
-cp package/base-files/files/etc/banner package/base-files/files/etc/banner.failsafe
+# ========== SSH Banner ==========
+cat > package/base-files/files/etc/banner <<"BANNEREOF"
+░██     ░██ ░██    ░█████                       ░██       ░██             ░██
+░██    ░██           ░██                        ░██       ░██             ░██
+░██   ░██   ░██      ░██  ░██    ░██  ░███████  ░██  ░██  ░██ ░██░████ ░████████
+░███████    ░██      ░██  ░██    ░██ ░██    ░██ ░██ ░████ ░██ ░███        ░██
+░██   ░██   ░██░██   ░██  ░██    ░██ ░█████████ ░██░██ ░██░██ ░██         ░██
+░██    ░██  ░██░██   ░██  ░██   ░███ ░██        ░████   ░████ ░██         ░██
+░██     ░██ ░██ ░██████    ░█████░██  ░███████  ░███     ░███ ░██          ░████
+=========================================================
+             KiJueWrt 25.0.0.1
+=========================================================
+BANNEREOF
+echo "diy-part2 KiJueWrt全部设置完成"
