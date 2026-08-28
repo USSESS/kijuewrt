@@ -1,24 +1,67 @@
-#!/bin/bash
-#
-# https://github.com/P3TERX/Actions-OpenWrt
-# File name: diy-part1.sh
-# Description: OpenWrt DIY script part 1 (Before Update feeds)
-#
-# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
+CONFIG_TARGET_x86=y
+CONFIG_TARGET_x86_64=y
+CONFIG_TARGET_x86_64_GENERIC=y
+CONFIG_TARGET_ROOTFS_EXT4FS=y
+CONFIG_TARGET_ROOTFS_SQUASHFS=y
+CONFIG_TARGET_IMAGES_GZIP=y
+CONFIG_GRUB_IMAGES=y
+CONFIG_GRUB_EFI_IMAGES=y
+CONFIG_TARGET_ROOTFS_PARTSIZE=2048
 
-# Uncomment a feed source
-#sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
+CONFIG_PACKAGE_luci=y
+CONFIG_PACKAGE_luci-base=y
+CONFIG_PACKAGE_luci-mod-admin-full=y
+CONFIG_PACKAGE_luci-proto-ppp=y
 
-# Add a feed source
-echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
-#echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
-# Argon主题源
-echo 'src-git argon https://github.com/jerrykuku/luci-theme-argon.git' >> feeds.conf.default
-# fanchmwrt插件包源
-echo 'src-git fanchmwrt https://github.com/fanchmwrt/fanchmwrt-packages.git' >> feeds.conf.default
-# 商店
-echo 'src-git istore https://github.com/linkease/istore.git' >> feeds.conf.default
+# ====== 中文包（两个必须都有，缺一个页面就半英文） ======
+CONFIG_PACKAGE_luci-i18n-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-base-zh-cn=y
+
+#主题
+CONFIG_PACKAGE_luci-theme-bootstrap=y
+CONFIG_PACKAGE_luci-theme-edge=y
+
+#多WAN负载均衡 mwan3
+CONFIG_PACKAGE_mwan3=y
+CONFIG_PACKAGE_luci-app-mwan3=y
+CONFIG_PACKAGE_luci-i18n-mwan3-zh-cn=y
+
+#拨号组件
+CONFIG_PACKAGE_ppp=y
+CONFIG_PACKAGE_pppoe-discovery=y
+
+#iStore商店
+CONFIG_PACKAGE_luci-app-store=y
+CONFIG_PACKAGE_luci-compat=y
+
+#一键上网向导 netwizard
+CONFIG_PACKAGE_luci-app-netwizard=y
+CONFIG_PACKAGE_luci-i18n-netwizard-zh-cn=y
+
+#网页终端
+CONFIG_PACKAGE_ttyd=y
+CONFIG_PACKAGE_kmod-macvlan=y
+
+#包管理器全套（后期装软件核心）
+CONFIG_PACKAGE_opkg=y
+CONFIG_PACKAGE_opkg-update=y
+CONFIG_PACKAGE_opkg-conf=y
+
+#网络下载工具 https依赖
+CONFIG_PACKAGE_curl=y
+CONFIG_PACKAGE_wget=y
+CONFIG_PACKAGE_wget-ssl=y
+CONFIG_PACKAGE_ca-certificates=y
+
+#python依赖，很多插件需要
+CONFIG_PACKAGE_python3=y
+CONFIG_PACKAGE_python3-base=y
+
+#压缩解压工具，离线ipk安装必备
+CONFIG_PACKAGE_unzip=y
+CONFIG_PACKAGE_gzip=y
+CONFIG_PACKAGE_tar=y
+
+#磁盘工具，挂载硬盘、分区维护
+CONFIG_PACKAGE_fdisk=y
+CONFIG_PACKAGE_e2fsprogs=y
