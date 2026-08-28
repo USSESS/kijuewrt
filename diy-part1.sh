@@ -1,10 +1,14 @@
 #!/bin/bash
 set -e
 
-# iStore软件中心源 linkease官方 main分支
-echo "src-git istore https://github.com/linkease/istore.git;main" >> feeds.conf.default
-# 一键上网设置向导 netwizard 源（sirpdboy 官方适配 24.10/25.12）
-echo "src-git netwizard https://github.com/sirpdboy/luci-app-netwizard.git;main" >> feeds.conf.default
+# ============================================================
+# 【本地内置包方案】
+# iStore(luci-app-store + 依赖) 和 netwizard(luci-app-netwizard)
+# 的源码已直接放在本仓库 package/ 目录下，编译用本地源码，
+# 不再添加第三方 feeds 源，避免外部源拉取失败/不兼容导致漏包。
+# 本脚本只更新官方 feeds（packages/luci/routing/telephony 等），
+# luci-compat、中文语言包等都来自这些官方源。
+# ============================================================
 
 # 本地导入仓库内定制Edge主题
 if [ -d "$GITHUB_WORKSPACE/package/luci-theme-edge-master" ];then
@@ -14,35 +18,20 @@ else
     echo "警告：本地Edge主题文件夹缺失，跳过复制"
 fi
 
-# 更新全部feeds
+# 更新官方 feeds 并安装
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# ========== 【关键】验证istore源是否真的拉取成功 ==========
-echo "====== 检查istore源拉取结果 ======"
-ls -la feeds/istore/ 2>/dev/null || echo "❌ feeds/istore/ 目录不存在，源拉取失败！"
-ls -la package/feeds/istore/ 2>/dev/null || echo "❌ package/feeds/istore/ 目录不存在，install失败！"
-
-# ========== 【补全】强制安装所有关键包，防止漏打包 ==========
-# 说明：set -e 下若某个包在 feeds 中不存在，install 返回非0会直接中断脚本，
-# 所以这里全部加 || true 兜底；真正决定"是否编进固件"的是 .config 里的 =y 选项。
-# iStore商店 + 强制依赖
-./scripts/feeds install luci-app-store || true
-./scripts/feeds install luci-compat || true
-
-# 上网向导（js版自带中文，i18n 包若不存在不影响主功能）
-./scripts/feeds install luci-app-netwizard || true
-./scripts/feeds install luci-i18n-netwizard-zh-cn || true
-
 # 中文语言包（让 LuCI 变中文的核心是 base-zh-cn，必装）
-./scripts/feeds install luci-i18n-zh-cn || true
 ./scripts/feeds install luci-i18n-base-zh-cn || true
 
-# 网络下载工具 + HTTPS证书
-./scripts/feeds install curl wget ca-certificates unzip tar || true
-
-# ========== 【最终验证】列出所有已安装的关键包 ==========
-echo "====== 关键包安装验证 ======"
-ls package/feeds/istore/ 2>/dev/null | grep -E "store|compat" || echo "❌ iStore相关包缺失"
-ls package/feeds/luci/ 2>/dev/null | grep -E "i18n-zh-cn|i18n-base-zh-cn" || echo "❌ 中文包缺失"
+# ========== 【验证】确认本地内置包都在 ==========
+echo "====== 检查本地内置包 ======"
+for pkg in luci-app-store luci-lib-taskd luci-lib-xterm taskd luci-app-netwizard; do
+    if [ -d "package/$pkg" ]; then
+        echo "OK  package/$pkg 存在"
+    else
+        echo "!!! package/$pkg 缺失！"
+    fi
+done
 echo "====== diy-part1.sh 执行完毕 ======"
