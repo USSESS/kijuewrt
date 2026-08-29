@@ -19,13 +19,13 @@ fi
 # ========== 【验证】确认本地内置包都在 ==========
 echo "====== 检查本地内置包 ======"
 # iStore全部封装在luci-app-store内部，不再单独校验taskd等子依赖
-pkg_list=(luci-app-store luci-app-netwizard)
+pkg_list=(luci-app-store luci-lib-taskd luci-lib-xterm taskd luci-app-netwizard)
 for pkg in "${pkg_list[@]}"; do
     if [ -d "package/$pkg" ]; then
         echo "OK  package/$pkg 存在"
     else
         echo "!!! package/$pkg 【缺失】！终止编译！"
+        ls -la package/
         exit 1
     fi
 done
-echo "====== diy-part1.sh 执行完毕 ======"
