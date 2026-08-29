@@ -1,8 +1,16 @@
 #!/bin/bash
+set -e
 
-#在线拉取istore整套源码，直接进openwrt/package
+# 写入feeds源 netwizard
+echo "src-git netwizard https://github.com/sirpdboy/luci-app-netwizard.git;main" >> feeds.conf.default
+
+# 在线拉取istore整套源码
 git clone https://github.com/linkease/istore.git temp_istore
-mv temp_istore/luci/* ./package/
+# istore真正需要的4个组件
+mv temp_istore/luci-app-store ./package/
+mv temp_istore/luci-lib-taskd ./package/
+mv temp_istore/luci-lib-xterm ./package/
+mv temp_istore/taskd ./package/
 rm -rf temp_istore
 
 #复制edge主题
@@ -14,19 +22,18 @@ else
     exit 1
 fi
 
-#复制你仓库剩下的其他插件 netwizard fwx系列
-cp -r "$GITHUB_WORKSPACE/package/"* ./package/
+# ========== 重要：不再执行 cp $GITHUB_WORKSPACE/package/* ./package/ ==========
+# 防止旧fwx/fwxd残留被拷贝进来！
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-echo "===开始校验本地包==="
+echo "===开始校验istore核心包==="
 PACK=(
 luci-app-store
 luci-lib-taskd
 luci-lib-xterm
 taskd
-luci-app-netwizard
 )
 for p in "${PACK[@]}";do
   if [ ! -d "package/$p" ];then
