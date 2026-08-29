@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# 删除 set‑e !!!
 
 cp -r "$GITHUB_WORKSPACE/package" ./
 
