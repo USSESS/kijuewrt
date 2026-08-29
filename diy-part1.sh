@@ -6,11 +6,11 @@ echo "src-git netwizard https://github.com/sirpdboy/luci-app-netwizard.git;main"
 
 # 在线拉取istore整套源码
 git clone https://github.com/linkease/istore.git temp_istore
-# istore真正需要的4个组件
-mv temp_istore/luci-app-store ./package/
-mv temp_istore/luci-lib-taskd ./package/
-mv temp_istore/luci-lib-xterm ./package/
-mv temp_istore/taskd ./package/
+# ✅istore所有组件在仓库内部 package/ 文件夹！！
+mv temp_istore/package/luci-app-store ./package/
+mv temp_istore/package/luci-lib-taskd ./package/
+mv temp_istore/package/luci-lib-xterm ./package/
+mv temp_istore/package/taskd ./package/
 rm -rf temp_istore
 
 #复制edge主题
@@ -21,9 +21,6 @@ else
     echo "ERROR:缺失edge主题"
     exit 1
 fi
-
-# ========== 重要：不再执行 cp $GITHUB_WORKSPACE/package/* ./package/ ==========
-# 防止旧fwx/fwxd残留被拷贝进来！
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
