@@ -13,9 +13,6 @@ else
     exit 1
 fi
 
-# KiJueWrt主题（移到这里，feeds update之前）
-mv luci-theme-kijue package/
-echo "OK:KiJueWrt主题移动完成"
 
 # 更新安装feeds
 ./scripts/feeds update -a
