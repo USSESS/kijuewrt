@@ -25,10 +25,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: openwrt/dl
-          key: ${{ env.IMM_BRANCH }}-dl-${{ hashFiles('.config') }}
+          key: ${{ env.IMM_BRANCH }}-dl-${{ hashFiles('config.txt') }}
           restore-keys: |
             ${{ env.IMM_BRANCH }}-dl-
-      - name: 执行 diy-part1.sh 添加feeds源(iStore+netwizard+edge主题)
+      - name: 执行 diy-part1.sh 添加feeds源+复制edge主题
         run: |
           cd openwrt
           chmod +x ../diy-part1.sh
@@ -38,7 +38,7 @@ jobs:
           cd openwrt
           cp ../.config .config
           make defconfig
-      - name: 执行diy-part2.sh（改名KiJueWrt、banner、默认中文、改IP主机名）
+      - name: 执行diy-part2.sh（改名KiJueWrt、banner、默认中文edge主题、改IP主机名）
         run: |
           cd openwrt
           chmod +x ../diy-part2.sh
@@ -47,10 +47,10 @@ jobs:
         run: |
           cd openwrt
           make download -j8
-      - name: 编译固件
+      - name: 编译固件（内存不足自动降级单线程重试）
         run: |
           cd openwrt
-          make -j$(nproc)
+          make -j$(nproc) || make -j1
       - name: 收集固件输出
         run: |
           mkdir -p ./artifacts
